@@ -1,0 +1,16 @@
+{
+    "name":"Require PR before merging",
+    "target":"branch",
+    "enforcement":"active",
+    "conditions": {
+        "ref_name": {
+            "include": ["refs/heads/main"],
+            "exclude": []
+        }
+    },
+    "rules": [
+        {"type": "pull_request"},
+        {"type": "deletion"},
+        {"type": "non_fast_forward"}
+    ]
+}

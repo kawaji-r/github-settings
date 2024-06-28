@@ -1,0 +1,9 @@
+#!/bin/bash
+# Rustプロジェクトの場合に使用する
+
+echo "[pre-push] Cargo.tomlに記載のバージョンがタグ付けされていない場合は追加します"
+cd "$(git rev-parse --show-toplevel)"
+cargo run --bin git_pre_push
+cd - > /dev/null
+echo "[pre-push] END"
+
