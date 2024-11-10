@@ -1,34 +1,52 @@
 #!/bin/bash
 # `hooks`フォルダに入っているファイルすべてを`.git/hooks`フォルダにシンボリックリンクする
 
-# プロジェクトルートディレクトリに移動
-cd "$(git rev-parse --show-toplevel)"
+function main () {
+    link_hooks
+}
 
-# .git/hooks ディレクトリの確認
-if [ ! -d .git/hooks ]; then
-  echo "Error: .git/hooks directory does not exist."
-  exit 1
-fi
+function link_hooks () {
+    # プロジェクトルートディレクトリに移動
+    cd "$(git rev-parse --show-toplevel)"
 
-# hooks ディレクトリ内のすべてのファイルにシンボリックリンクを作成
-for hook in .git-settings/hooks/*; do
-  hook_name=$(basename "$hook")
-  target=".git/hooks/$hook_name"
+    # .git/hooks ディレクトリの確認
+    if [ ! -d .git/hooks ]; then
+      echo "Error: .git/hooks directory does not exist."
+      exit 1
+    fi
 
-  if [ "$hook_name" == "$(basename "$0")" ]; then
-    continue
-  fi
+    # hooks ディレクトリ内のすべてのファイルにシンボリックリンクを作成
+    for hook in ./hooks/*; do
+      hook_name=$(basename "$hook")
+      target=".git/hooks/$hook_name"
 
-  # 既存のフックがある場合はバックアップを作成
-  if [ -e "$target" ]; then
-    mv "$target" "$target.backup"
-  fi
+      if [ "$hook_name" == "$(basename "$0")" ]; then
+        continue
+      fi
 
-  ln -s "../../$hook" "$target"
-  echo "Created symlink for $hook_name"
-done
+      echo =======================
+      pwd
+      echo ln -s "$hook" "$target"
+      continue
 
-cd - > /dev/null
+      # 既存のフックがある場合
+      if [ -e "$target" ]; then
+        # 内容が同じ場合はスキップ
+        if diff "$hook" "$target" > /dev/null 2>&1; then
+          continue
+        fi
 
-echo "Git hooks have been set up."
+        # 内容が異なる場合はバックアップを作成
+        mv "$target" "$target.backup"
+      fi
 
+      ln -s "$hook" "$target"
+      echo "Created symlink for $hook_name"
+    done
+
+    cd - > /dev/null
+
+    echo "Git hooks have been set up."
+}
+
+main
